@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SCHOOLRide — Safe Journeys, Happy Smiles</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    
+     body{
+      background: linear-gradient(135deg, rgba(15,23,42,0.75), rgba(15,150,105,0.65)),
+      url('https;//images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=1600&q=80') no-repeat center center fixed;
+      background-size: cover;
+      color: #f8fafc;
+      padding-bottom: 120px;
+      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
+     }
+    .hidden-section { display: none !important; }
+
+    @keyframes playfulDrive {
+      0% { transform: translate(-120vw, 45vh) rotate(-15deg) scale(1.2); }
+      30% { transform: translate(15vw, -12vh) rotate(12deg) scale(1.5); }
+      60% { transform: translate(35vw, 18vh) rotate(-8deg) scale(1.4); }
+      100% { transform: translate(0, 0) rotate(0deg) scale(1.7); }
+    }
+    @keyframes rocketBlastoff {
+      0% { transform: scale(1) translateX(0); opacity: 1; }
+      50% { transform: scale(4) translateX(50vw) rotate(45deg); opacity: 1; }
+      100% { transform: scale(8) translateX(120vw) rotate(45deg); opacity: 0; }
+    }
+    .bus-playful { animation: playfulDrive 3.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+    .rocket-anim { animation: rocketBlastoff 0.9s ease-in-out forwards; }
+
+    .container { max-width: 800px; margin: 0 auto; padding: 0 16px; }
+    nav { background: rgba(30, 41, 59, 0.85); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 50; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+    .logo { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo span:nth-child(1) { color: #34d399; }
+    .logo span:nth-child(2) { color: #fbbf24; }
+    
+    .card { background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(16px); border-radius: 28px; padding: 28px; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); margin-bottom: 24px; }
+    .hero-banner { background: linear-gradient(135deg, #059669, #0284c7, #fbbf24); border-radius: 28px; padding: 44px 20px; color: white; text-align: center; position: relative; overflow: hidden; margin-bottom: 24px; box-shadow: 0 15px 30px rgba(5,150,105,0.3); }
+    
+    button { cursor: pointer; border: none; font-weight: 700; border-radius: 14px; padding: 14px 22px; transition: 0.2s; font-size: 14px; }
+    .btn-emerald { background: linear-gradient(135deg, #059669, #34d399); color: #064e3b; width: 100%; box-shadow: 0 4px 15px rgba(52,211,153,0.3); }
+    .btn-sky { background: linear-gradient(135deg, #0284c7, #38bdf8); color: #082f49; width: 100%; box-shadow: 0 4px 15px rgba(56,189,248,0.3); }
+    
+    input, select, textarea { width: 100%; padding: 14px 18px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.2); background: rgba(15, 23, 42, 0.6); color: white; font-size: 14px; margin-top: 6px; margin-bottom: 16px; outline: none; }
+    
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(16px); border-top: 1px solid rgba(255,255,255,0.1); padding: 12px 0; z-index: 40; display: flex; justify-content: space-around; }
+    .nav-item { background: none; border: none; font-size: 12px; font-weight: 700; color: #94a3b8; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+    .nav-item.active { color: #fbbf24; }
+
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
+    .modal-box { background: #1e293b; border-radius: 32px; padding: 32px; width: 100%; max-width: 440px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; }
+
+    #toastBanner { position: fixed; top: 20px; right: 20px; z-index: 300; background: #059669; color: white; padding: 14px 24px; border-radius: 16px; font-weight: 700; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transform: translateY(-150px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    #toastBanner.show { transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <div id="toastBanner">Notification Received ✅</div>
+
+  <audio id="bgMusic" loop>
+    <source src="https://assets.mixkit.co/music/preview/mixkit-uplifting-keys-484.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- SPLASH SCREEN -->
+  <div id="splashScreen" style="position:fixed; inset:0; z-index:200; background:linear-gradient(135deg, #059669, #0284c7, #1e293b); display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; transition: opacity 1s;">
+    <div id="animatedBus" class="bus-playful" style="font-size: 90px; user-select: none;">🚌</div>
+    <div style="text-align:center; margin-top:20px;">
+      <h1 style="font-size: 52px; font-weight: 800; letter-spacing: -1px;">SCHOOL<span style="color:#fbbf24">Ride</span></h1>
+      <p style="font-size: 16px; opacity: 0.9; margin-top: 8px;">Safe Journeys, Happy Smiles</p>
+    </div>
+  </div>
+
+  <nav>
+    <div class="logo"><span>SCHOOL</span><span>Ride</span></div>
+    <button onclick="openSettingsModal()" style="background:rgba(255,255,255,0.1); color:#f8fafc; padding:8px 16px; font-size:12px; border:1px solid rgba(255,255,255,0.2);">⚙️ Settings & Music</button>
+  </nav>
+  <!-- 1. LANDING & WELCOME SECTION -->
+  <main id="welcomeSection" class="container" style="padding-top: 40px;">
+    <div class="card" style="padding: 0; overflow: hidden;">
+      <div class="hero-banner">
+        <h1 style="font-size: 34px; font-weight: 800; margin-bottom: 10px;">SCHOOLRide Portal</h1>
+        <p style="font-size: 15px; opacity: 0.95; max-width: 420px; margin: 0 auto;">"Because every child deserves a safe, tracked journey from doorstep to classroom."</p>
+      </div>
+      <div style="padding: 30px; text-align: center;">
+        <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Get started as a parent or driver</h2>
+        <p style="font-size: 13px; color: #94a3b8; margin-bottom: 24px;">Sign in securely to manage student transport and live GPS tracking.</p>
+        <div style="display: flex; gap: 14px; max-width: 420px; margin: 0 auto;">
+          <button onclick="openAuthModal('parent')" class="btn-emerald">Sign In as Parent 👨‍👩‍👧‍👦</button>
+          <button onclick="openAuthModal('driver')" class="btn-sky">Sign In as Driver 🚐</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- AUTHENTICATION MODAL WITH ROCKET BLASTOFF -->
+  <div id="authModal" class="hidden-section modal-backdrop">
+    <div class="modal-box" style="position: relative; overflow: hidden;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 id="authModalTitle" style="font-size: 20px; font-weight: 800;">Secure Sign In</h3>
+        <button onclick="closeAuthModal()" style="background:none; font-size:22px; color:#94a3b8; padding:0;">&times;</button>
+      </div>
+      <form onsubmit="handleAuthLogin(event)">
+        <label style="font-size: 12px; font-weight: 700; color: #cbd5e1;">Your Full Name</label>
+        <input id="loginName" type="text" required placeholder="e.g. Mrs. Adebayo">
+        
+        <label style="font-size: 12px; font-weight: 700; color: #cbd5e1;">Email or Phone Number</label>
+        <input id="loginCredential" type="text" required placeholder="e.g. adebayo@gmail.com">
+        
+        <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px; background:rgba(15,23,42,0.5); padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,0.1);">
+          <input type="checkbox" id="pushNotifToggle" checked style="width: 20px; height: 20px; margin:0; cursor: pointer;">
+          <label for="pushNotifToggle" style="font-size: 12px; color: #cbd5e1; cursor: pointer; font-weight: 600;">Turn on instant push notifications 🔔</label>
+        </div>
+
+        <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 20px; background:rgba(15,23,42,0.5); padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,0.1);">
+          <input type="checkbox" id="authTermsCheck" checked style="width: 20px; height: 20px; margin-top:2px;">
+          <label for="authTermsCheck" style="font-size: 11px; color: #94a3b8; cursor: pointer;">I agree to SCHOOLRide Terms & Conditions and Child Safety Policy.</label>
+        </div>
+
+        <div style="position: relative; display: flex; align-items: center;">
+          <button type="submit" id="rocketBtn" class="btn-emerald" style="display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 15px;">
+            Sign In Securely <span id="rocketIcon" style="font-size: 18px; display: inline-block;">🚀</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- 2. PARENT APP DASHBOARD -->
+  <div id="parentSection" class="hidden-section container" style="padding-top: 30px;">
+    
+    <!-- Header Banner -->
+    <div style="background: linear-gradient(135deg, #059669, #0d9488, #0284c7); border-radius: 28px; padding: 26px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; box-shadow: 0 15px 30px rgba(5,150,105,0.25);">
+      <div>
+        <span style="font-size: 11px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-weight: 700;">Parent Portal</span>
+        <h2 id="parentWelcomeTitle" style="font-size: 22px; font-weight: 800; margin-top: 6px;">Welcome! 👋</h2>
+      </div>
+      <div style="background: rgba(15,23,42,0.6); backdrop-filter: blur(8px); color: white; padding: 12px 18px; border-radius: 18px; text-align: right; border: 1px solid rgba(255,255,255,0.15);">
+        <div style="font-size: 10px; font-weight: 700; color: #94a3b8;">Live Trip Status</div>
+        <div id="parentTripBadge" style="font-size: 12px; font-weight: 800; color: #fbbf24;">Pending Registration</div>
+      </div>
+    </div>
+
+    <!-- TAB 1: HOME & MULTI-CHILD REGISTRATION -->
+    <div id="parentTabHome" class="card">
+      <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: #34d399;">🧒 Register Child Profiles (Multi-Child Support)</h3>
+      <form onsubmit="addChild(event)">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: #cbd5e1;">Child's Full Name</label>
+            <input id="childName" type="text" required placeholder="e.g. Tolu Adebayo">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; color: #cbd5e1;">Age</label>
+            <input id="childAge" type="number" required placeholder="e.g. 8">
+          </div>
+        </div>
+        <label style="font-size: 11px; font-weight: 700; color: #cbd5e1;">School Name & Area Meeting Point</label>
+        <input id="childSchool" type="text" required placeholder="e.g. Corona School (Ikeja Zone A Point)">
+        
+        <label style="font-size: 11px; font-weight: 700; color: #cbd5e1;">Medical / Safety Notes</label>
+        <input id="childNotes" type="text" placeholder="e.g. Inhaler in backpack">
+        
+        <button type="submit" class="btn-sky" style="margin-top: 6px;">+ Add Another Child to List</button>
+      </form>
+
+      <div style="margin-top: 24px;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 12px; align-items: center;">
+          <span style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8;">Added Children in Cart (<span id="childCountBadge">0</span>)</span>
+          <span style="font-size: 11px; font-weight: 700; color: #34d399; background: rgba(5,150,105,0.2); padding: 4px 10px; border-radius: 12px;">Private & Authenticated</span>
+        </div>
+        <div id="childrenList" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+          <div style="font-size: 12px; color: #94a3b8; text-align: center; padding: 20px; background: rgba(15,23,42,0.4); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">No children added yet. Fill the form above and click "+ Add Another Child".</div>
+        </div>
+
+        <!-- Dynamic Multi-Child Checkout Trigger -->
+        <button id="multiChildProceedBtn" onclick="proceedToSubscription()" class="btn-emerald hidden-section" style="padding: 16px; font-size: 15px; font-weight: 800;">
+          Register My Child Now 🚀
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 2: TRACKING & DRIVER INFO (GOOGLE MAPS SIMULATION) -->
+    <div id="parentTabTrack" class="hidden-section card">
+      <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: #38bdf8;">📍 Live Ride & Google Maps GPS Tracking</h3>
+      <div id="trackingLockedNotice" style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.4); color: #fde047; padding: 16px; border-radius: 16px; font-size: 12px; font-weight: 600; margin-bottom: 16px;">
+        ⚠️ Live GPS tracking and driver routing will unlock automatically once subscription payment is approved.
+      </div>
+      <div id="trackingContent" class="hidden-section" style="display: flex; flex-direction: column; gap: 16px;">
+        <div style="background: rgba(2,132,199,0.2); border: 1px solid rgba(56,189,248,0.3); padding: 18px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-size: 14px; font-weight: 800; color: #38bdf8;">Assigned Driver: Mr. Chukwuma (Ikeja Route)</div>
+            <div style="font-size: 12px; color: #94a3b8; margin-top: 4px;">Vehicle: Toyota HiAce Bus • Plate: ABC-123-XY</div>
+          </div>
+          <span style="background: #059669; color: white; font-size: 11px; font-weight: 700; padding: 6px 14px; border-radius: 20px;">Live GPS Online</span>
+        </div>
+        
+        <!-- Google Maps Simulated View -->
+        <div style="height: 220px; background: url('https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=800&q=80') center/cover; border-radius: 20px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); display: flex; align-items: flex-end; padding: 14px;">
+          <div style="background: rgba(15,23,42,0.85); backdrop-filter: blur(8px); padding: 10px 16px; border-radius: 14px; font-size: 12px; font-weight: 700; width: 100%; display: flex; justify-content: space-between; align-items: center;">
+            <span style="color: #34d399;">🚐 Bus is 2.4km away from your meeting point</span>
+            <span style="color: #fbbf24;">ETA: 7 mins</span>
+          </div>
+        </div>
+
+        <button onclick="triggerParentAlert('Checked In: Child has safely stepped into the bus! 🚍')" class="btn-emerald" style="font-size: 13px;">
+          Receive Live Notification Status 🔔
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 3: SUBSCRIPTION & CHECKOUT -->
+    <div id="parentTabSubscription" class="hidden-section card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 18px; font-weight: 800; color: #fbbf24;">💳 Secure Subscription & Checkout</h3>
+        <span id="totalChildrenSummary" style="font-size: 11px; font-weight: 700; background: rgba(5,150,105,0.2); color: #34d399; padding: 6px 12px; border-radius: 20px;">0 Children Registered</span>
+      </div>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 18px;">Total amount automatically multiplies based on your registered children count.</p>
+      
+      <!-- Plan Selector Cards -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+        <div onclick="selectPlan('monthly', 25000)" id="cardMonthly" style="cursor: pointer; padding: 16px; border-radius: 20px; border: 2px solid rgba(255,255,255,0.15); background: rgba(15,23,42,0.4); transition: 0.2s;">
+          <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 14px;">
+            <span>Monthly Plan</span>
+            <span style="color: #38bdf8;">₦25,000</span>
+          </div>
+          <div style="font-size: 11px; color: #94a3b8; margin-top: 4px;">Per child / month</div>
+        </div>
+
+        <div onclick="selectPlan('termly', 65000)" id="cardTermly" style="cursor: pointer; padding: 16px; border-radius: 20px; border: 2px solid #059669; background: rgba(5,150,105,0.15); transition: 0.2s;">
+          <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 14px; color: #34d399;">
+            <span>Termly (Best Value)</span>
+            <span>₦65,000</span>
+          </div>
+          <div style="font-size: 11px; color: #34d399; margin-top: 4px;">Full school term</div>
+        </div>
+      </div>
+
+      <!-- Summation Box -->
+      <div style="background: rgba(15,23,42,0.6); padding: 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.12); display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div>
+          <div style="font-size: 11px; font-weight: 700; color: #94a3b8;">Total Sum Due (<span id="calcBreakdown">0 kids × ₦0</span>):</div>
+          <div id="totalSumPrice" style="font-size: 24px; font-weight: 800; color: #34d399; margin-top: 4px;">₦0</div>
+        </div>
+        <div id="paymentStatusBadge" style="background: rgba(251,191,36,0.2); color: #fbbf24; font-size: 11px; font-weight: 800; padding: 8px 14px; border-radius: 20px;">Parent Pending Payment</div>
+      </div>
+
+      <!-- Payment Methods -->
+      <div style="margin-bottom: 20px;">
+        <label style="font-size: 11px; font-weight: 800; text-transform: uppercase; color: #94a3b8; display: block; margin-bottom: 10px;">Choose Payment Method</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+          <button type="button" onclick="switchPayMethod('card')" id="btnPayCard" style="background: rgba(5,150,105,0.2); border: 2px solid #059669; color: #34d399; padding: 12px;">💳 Card Payment</button>
+          <button type="button" onclick="switchPayMethod('bank')" id="btnPayBank" style="background: rgba(15,23,42,0.4); border: 2px solid rgba(255,255,255,0.15); color: #94a3b8; padding: 12px;">🏦 Bank Transfer</button>
+        </div>
+
+        <!-- Card Form -->
+        <div id="cardPaymentForm" style="background: rgba(15,23,42,0.5); padding: 16px; border-radius: 18px; border: 1px solid rgba(255,255,255,0.1);">
+          <label style="font-size: 11px; font-weight: 700; color: #cbd5e1;">Card Number</label>
+          <input type="text" placeholder="4532 •••• •••• 8921">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 11px; font-weight: 700; color: #cbd5e1;">Expiry</label>
+              <input type="text" placeholder="MM/YY">
+            </div>
+            <div>
+              <label style="font-size: 11px; font-weight: 700; color: #cbd5e1;">CVV</label>
+              <input type="password" placeholder="123">
+            </div>
+          </div>
+        </div>
+
+        <!-- Bank Transfer Details -->
+        <div id="bankTransferBox" class="hidden-section" style="background: rgba(2,132,199,0.15); padding: 16px; border-radius: 18px; border: 1px solid rgba(56,189,248,0.3); font-size: 12px;">
+          <div style="font-weight: 800; color: #38bdf8; margin-bottom: 8px;">Transfer exact total to SCHOOLRide Official Account:</div>
+          <div style="background: rgba(15,23,42,0.7); padding: 12px; border-radius: 12px; font-family: monospace; color: #f8fafc; margin-bottom: 8px;">
+            <div>Bank: <strong>Wema Bank / Moniepoint</strong></div>
+            <div>Account No: <strong style="color: #38bdf8;">0123456789</strong></div>
+            <div>Name: <strong>SCHOOLRide Transport Tech Ltd</strong></div>
+          </div>
+          <div style="color: #94a3b8; font-size: 11px; font-style: italic;">Auto-verifies instantly after transfer completion.</div>
+        </div>
+      </div>
+
+      <button onclick="processRealPayment()" class="btn-emerald" style="padding: 16px; font-size: 15px; font-weight: 800;">Complete Secure Payment & Unlock GPS 🔒</button>
+    </div>
+
+  </div>
+  <!-- 3. DRIVER DASHBOARD -->
+  <section id="driverSection" class="hidden-section container" style="padding-top: 30px;">
+    <div style="background: linear-gradient(135deg, #0284c7, #1d4ed8, #059669); border-radius: 28px; padding: 26px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <div>
+        <span style="font-size: 11px; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-weight: 700;">Verified Driver Portal</span>
+        <h2 id="driverWelcomeTitle" style="font-size: 22px; font-weight: 800; margin-top: 6px;">Hello, Driver! 🚐</h2>
+      </div>
+      <div style="background: rgba(15,23,42,0.6); padding: 10px 16px; border-radius: 18px; display: flex; align-items: center; gap: 10px; border: 1px solid rgba(255,255,255,0.15);">
+        <div style="font-size: 11px; font-weight: 700;">GPS & Push Alerts</div>
+        <input type="checkbox" id="gpsToggle" checked onchange="toggleGPS()" style="width: 20px; height: 20px; margin: 0; cursor: pointer;">
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="font-size: 18px; font-weight: 800; margin-bottom: 16px; color: #38bdf8;">📋 Assigned Student Route & Meeting Points</h3>
+      <div style="background: rgba(15,23,42,0.5); border: 1px solid rgba(255,255,255,0.1); padding: 18px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+        <div>
+          <div id="driverAssignedChildDisplay" style="font-weight: 800; font-size: 16px; color: #f8fafc;">Tolu Adebayo <span style="font-size: 12px; font-weight: 500; color: #94a3b8;">(Age 8)</span></div>
+          <div style="font-size: 12px; color: #cbd5e1; margin-top: 4px;">🏫 Corona School • 📍 <strong>Ikeja Zone A Meeting Point</strong></div>
+          <div style="font-size: 11px; color: #fbbf24; font-weight: 700; margin-top: 4px;">⚠️ Safety Note: Inhaler in backpack</div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button onclick="driverNotifyMeetingPoint()" style="background: rgba(251,191,36,0.2); color: #fbbf24; border: 1px solid rgba(251,191,36,0.4); padding: 8px 12px; font-size: 11px;">At Meeting Point 📍</button>
+          <button onclick="driverCheckInChild()" style="background: #059669; color: white; padding: 8px 14px; font-size: 11px;">Check-In Child ✅</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FIXED BOTTOM NAVIGATION BAR FOR PARENTS -->
+  <div id="parentBottomNav" class="hidden-section bottom-nav">
+    <div style="width: 100%; max-width: 440px; display: flex; justify-content: space-around; margin: 0 auto;">
+      <button onclick="switchParentTab('home')" id="navBtnHome" class="nav-item active">
+        <span style="font-size: 20px;">🏠</span> Home
+      </button>
+      <button onclick="switchParentTab('track')" id="navBtnTrack" class="nav-item">
+        <span style="font-size: 20px;">📍</span> Track Ride
+      </button>
+      <button onclick="switchParentTab('subscription')" id="navBtnSub" class="nav-item">
+        <span style="font-size: 20px;">💳</span> Subscription
+      </button>
+      <button onclick="openSettingsModal()" class="nav-item">
+        <span style="font-size: 20px;">⚙️</span> Settings
+      </button>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" class="hidden-section modal-backdrop">
+    <div class="modal-box" style="display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 18px; font-weight: 800; color: #fbbf24;">⚙️ Settings & Controls</h3>
+        <button onclick="closeSettingsModal()" style="background:none; font-size:22px; color:#94a3b8; padding:0;">&times;</button>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15,23,42,0.5); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);">
+        <span style="font-size: 13px; font-weight: 700;">🎵 Background Ambiance Music</span>
+        <button onclick="toggleBackgroundMusic()" id="musicToggleBtn" style="background: #059669; color: white; padding: 6px 14px; font-size: 11px;">Play Music</button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15,23,42,0.5); padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1);">
+        <span style="font-size: 13px; font-weight: 700;">Screen Brightness Dimmer</span>
+        <input type="range" min="60" max="100" value="100" oninput="adjustBrightness(this.value)" style="width: 130px; margin: 0; cursor: pointer;">
+      </div>
+      
+      <div onclick="openSupportModal(); closeSettingsModal();" style="cursor: pointer; background: rgba(2,132,199,0.2); padding: 14px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(56,189,248,0.3);">
+        <span style="font-size: 13px; font-weight: 800; color: #38bdf8;">🎧 24/7 Customer Care</span>
+        <span style="color: #38bdf8; font-weight: 800;">&rarr;</span>
+      </div>
+
+      <button onclick="goHome(); closeSettingsModal();" style="background: rgba(225,29,72,0.2); color: #f43f5e; border: 1px solid rgba(225,29,72,0.4); padding: 12px; font-size: 13px;">Sign Out 🚪</button>
+    </div>
+  </div>
+
+  <!-- CUSTOMER CARE MODAL -->
+  <div id="supportModal" class="hidden-section modal-backdrop">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="font-size: 18px; font-weight: 800; color: #38bdf8;">🎧 24/7 Customer Care</h3>
+        <button onclick="closeSupportModal()" style="background:none; font-size:22px; color:#94a3b8; padding:0;">&times;</button>
+      </div>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 14px;">Reach our dedicated student safety team anytime.</p>
+      <div style="background: rgba(2,132,199,0.2); padding: 14px; border-radius: 14px; margin-bottom: 14px; border: 1px solid rgba(56,189,248,0.3);">
+        <div style="font-size: 11px; font-weight: 700; color: #38bdf8;">Emergency Helpline</div>
+        <div style="font-size: 16px; font-weight: 800; color: white; margin-top: 2px;">+234 800 SCHOOLRIDE</div>
+      </div>
+      <textarea rows="2" placeholder="Describe your issue..." style="margin-bottom: 12px;"></textarea>
+      <button onclick="triggerParentAlert('Support message sent! Our team will contact you shortly.'); closeSupportModal();" class="btn-sky">Send Message</button>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE JAVASCRIPT & NOTIFICATION SYNC -->
+  <script>
+    let currentRole = '';
+    let childrenCart = [];
+    let selectedPlanPrice = 65000;
+    let selectedPlanLabel = 'Termly Plan';
+    let isMusicPlaying = false;
+
+    function openAuthModal(role) {
+      currentRole = role;
+      document.getElementById('authModalTitle').innerText = role === 'parent' ? 'Sign In as Parent 👨‍👩‍👧‍👦' : 'Sign In as Driver 🚐';
+      document.getElementById('authModal').classList.remove('hidden-section');
+    }
+    function closeAuthModal() { document.getElementById('authModal').classList.add('hidden-section'); }
+
+    function handleAuthLogin(e) {
+      e.preventDefault();
+      if (!document.getElementById('authTermsCheck').checked) { triggerParentAlert('Please agree to terms.'); return; }
+      const name = document.getElementById('loginName').value;
+      
+      const btn = document.getElementById('rocketBtn');
+      btn.classList.add('rocket-anim');
+
+      setTimeout(() => {
+        closeAuthModal();
+        btn.classList.remove('rocket-anim');
+        document.getElementById('welcomeSection').classList.add('hidden-section');
+
+        if (currentRole === 'parent') {
+          document.getElementById('parentWelcomeTitle').innerText = `Welcome, ${name}! 👋`;
+          document.getElementById('parentSection').classList.remove('hidden-section');
+          document.getElementById('parentBottomNav').classList.remove('hidden-section');
+          document.getElementById('driverSection').classList.add('hidden-section');
+          switchParentTab('home');
+          triggerParentAlert('Secure Login Verified ✅');
+        } else {
+          document.getElementById('driverWelcomeTitle').innerText = `Hello, Driver ${name} 🚐`;
+          document.getElementById('driverSection').classList.remove('hidden-section');
+          document.getElementById('parentSection').classList.add('hidden-section');
+          document.getElementById('parentBottomNav').classList.add('hidden-section');
+          triggerParentAlert('Driver Route Dispatch Active 📍');
+        }
+      }, 850);
+    }
+
+    function switchParentTab(tabName) {
+      document.getElementById('parentTabHome').classList.add('hidden-section');
+      document.getElementById('parentTabTrack').classList.add('hidden-section');
+      document.getElementById('parentTabSubscription').classList.add('hidden-section');
+
+      document.getElementById('navBtnHome').className = 'nav-item';
+      document.getElementById('navBtnTrack').className = 'nav-item';
+      document.getElementById('navBtnSub').className = 'nav-item';
+
+      if (tabName === 'home') {
+        document.getElementById('parentTabHome').classList.remove('hidden-section');
+        document.getElementById('navBtnHome').className = 'nav-item active';
+      } else if (tabName === 'track') {
+        document.getElementById('parentTabTrack').classList.remove('hidden-section');
+        document.getElementById('navBtnTrack').className = 'nav-item active';
+      } else if (tabName === 'subscription') {
+        document.getElementById('parentTabSubscription').classList.remove('hidden-section');
+        document.getElementById('navBtnSub').className = 'nav-item active';
+        updateSubscriptionMath();
+      }
+    }
+
+    function goHome() {
+      document.getElementById('welcomeSection').classList.remove('hidden-section');
+      document.getElementById('parentSection').classList.add('hidden-section');
+      document.getElementById('driverSection').classList.add('hidden-section');
+      document.getElementById('parentBottomNav').classList.add('hidden-section');
+    }
+
+    function addChild(e) {
+      e.preventDefault();
+      const name = document.getElementById('childName').value;
+      const age = document.getElementById('childAge').value;
+      const school = document.getElementById('childSchool').value;
+      const notes = document.getElementById('childNotes').value || 'No medical notes';
+
+      childrenCart.push({ name, age, school, notes });
+      updateChildrenListUI();
+      e.target.reset();
+      triggerParentAlert('Child added to registration cart! 🧒');
+    }
+
+    function updateChildrenListUI() {
+      const count = childrenCart.length;
+      document.getElementById('childCountBadge').innerText = count;
+      const list = document.getElementById('childrenList');
+      
+      if (count === 0) {
+        list.innerHTML = '<div style="font-size: 12px; color: #94a3b8; text-align: center; padding: 20px; background: rgba(15,23,42,0.4); border-radius: 16px; border: 1px dashed rgba(255,255,255,0.1);">No children added yet. Fill the form above and click "+ Add Another Child".</div>';
+        document.getElementById('multiChildProceedBtn').classList.add('hidden-section');
+        return;
+      }
+
+      let html = '';
+      childrenCart.forEach((child, index) => {
+        const initials = child.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+        html += `
+          <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(15,23,42,0.6); padding:14px; border-radius:16px; border:1px solid rgba(255,255,255,0.1);">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; border-radius:50%; background:rgba(52,211,153,0.2); color:#34d399; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:14px;">${initials}</div>
+              <div>
+                <div style="font-weight:800; font-size:14px; color:white;">${child.name} <span style="font-weight:normal; color:#94a3b8; font-size:11px;">(Age ${child.age})</span></div>
+                <div style="font-size:11px; color:#cbd5e1;">🏫 ${child.school}</div>
+                <div style="font-size:10px; color:#fbbf24; margin-top:2px;">⚠️ Note: ${child.notes}</div>
+              </div>
+            </div>
+            <span style="font-size:11px; font-weight:700; background:rgba(52,211,153,0.2); color:#34d399; padding:4px 10px; border-radius:12px;">Child #${index + 1}</span>
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+
+      const proceedBtn = document.getElementById('multiChildProceedBtn');
+      proceedBtn.classList.remove('hidden-section');
+      if (count === 1) {
+        proceedBtn.innerText = 'Register My Child & Proceed to Payment 🚀';
+      } else {
+        proceedBtn.innerText = `Register My ${count} Children & Proceed to Payment 🚀`;
+      }
+
+      document.getElementById('driverAssignedChildDisplay').innerHTML = `${childrenCart[count - 1].name} <span style="font-size: 12px; font-weight: 500; color: #94a3b8;">(Age ${childrenCart[count - 1].age})</span>`;
+    }
+
+    function proceedToSubscription() {
+      switchParentTab('subscription');
+      updateSubscriptionMath();
+    }
+
+    function selectPlan(type, price) {
+      selectedPlanPrice = price;
+      selectedPlanLabel = type === 'monthly' ? 'Monthly Plan' : 'Termly Plan';
+      if (type === 'monthly') {
+        document.getElementById('cardMonthly').style.borderColor = '#38bdf8';
+        document.getElementById('cardMonthly').style.background = 'rgba(56,189,248,0.15)';
+        document.getElementById('cardTermly').style.borderColor = 'rgba(255,255,255,0.15)';
+        document.getElementById('cardTermly').style.background = 'rgba(15,23,42,0.4)';
+      } else {
+        document.getElementById('cardTermly').style.borderColor = '#059669';
+        document.getElementById('cardTermly').style.background = 'rgba(5,150,105,0.15)';
+        document.getElementById('cardMonthly').style.borderColor = 'rgba(255,255,255,0.15)';
+        document.getElementById('cardMonthly').style.background = 'rgba(15,23,42,0.4)';
+      }
+      updateSubscriptionMath();
+    }
+
+    function updateSubscriptionMath() {
+      const count = childrenCart.length || 1;
+      const total = count * selectedPlanPrice;
+      const kidWord = count === 1 ? 'child' : 'children';
+      document.getElementById('totalChildrenSummary').innerText = `${count} ${count === 1 ? 'Child' : 'Children'} Registered`;
+      document.getElementById('calcBreakdown').innerText = `${count} ${kidWord} × ₦${selectedPlanPrice.toLocaleString()}`;
+      document.getElementById('totalSumPrice').innerText = `₦${total.toLocaleString()}`;
+    }
+
+    function switchPayMethod(method) {
+      if (method === 'card') {
+        document.getElementById('btnPayCard').style.background = 'rgba(5,150,105,0.2)';
+        document.getElementById('btnPayCard').style.borderColor = '#059669';
+        document.getElementById('btnPayCard').style.color = '#34d399';
+        document.getElementById('btnPayBank').style.background = 'rgba(15,23,42,0.4)';
+        document.getElementById('btnPayBank').style.borderColor = 'rgba(255,255,255,0.15)';
+        document.getElementById('btnPayBank').style.color = '#94a3b8';
+        document.getElementById('cardPaymentForm').classList.remove('hidden-section');
+        document.getElementById('bankTransferBox').classList.add('hidden-section');
+      } else {
+        document.getElementById('btnPayBank').style.background = 'rgba(2,132,199,0.2)';
+        document.getElementById('btnPayBank').style.borderColor = '#38bdf8';
+        document.getElementById('btnPayBank').style.color = '#38bdf8';
+        document.getElementById('btnPayCard').style.background = 'rgba(15,23,42,0.4)';
+        document.getElementById('btnPayCard').style.borderColor = 'rgba(255,255,255,0.15)';
+        document.getElementById('btnPayCard').style.color = '#94a3b8';
+        document.getElementById('bankTransferBox').classList.remove('hidden-section');
+        document.getElementById('cardPaymentForm').classList.add('hidden-section');
+      }
+    }
+
+    function processRealPayment() {
+      if (childrenCart.length === 0) {
+        triggerParentAlert('Please add at least one child first!');
+        switchParentTab('home');
+        return;
+      }
+      const total = (childrenCart.length * selectedPlanPrice).toLocaleString();
+      document.getElementById('paymentStatusBadge').innerText = 'Payment Completed & Approved ✅';
+      document.getElementById('paymentStatusBadge').style.background = 'rgba(5,150,105,0.25)';
+      document.getElementById('paymentStatusBadge').style.color = '#34d399';
+
+      document.getElementById('parentTripBadge').innerText = 'In Transit to School 🚌';
+      document.getElementById('parentTripBadge').style.color = '#34d399';
+
+      document.getElementById('trackingLockedNotice').classList.add('hidden-section');
+      document.getElementById('trackingContent').classList.remove('hidden-section');
+
+      triggerParentAlert(`Payment of ₦${total} verified! Live GPS unlocked 🔒`);
+      switchParentTab('track');
+    }
+
+    function triggerParentAlert(message) {
+      const banner = document.getElementById('toastBanner');
+      banner.innerText = message;
+      banner.classList.add('show');
+      setTimeout(() => banner.classList.remove('show'), 3500);
+    }
+
+    function openSettingsModal() { document.getElementById('settingsModal').classList.remove('hidden-section'); }
+    function closeSettingsModal() { document.getElementById('settingsModal').classList.add('hidden-section'); }
+    
+    function toggleBackgroundMusic() {
+      const audio = document.getElementById('bgMusic');
+      const btn = document.getElementById('musicToggleBtn');
+      if (isMusicPlaying) {
+        audio.pause();
+        btn.innerText = 'Play Music';
+        btn.style.background = '#059669';
+        isMusicPlaying = false;
+      } else {
+        audio.play().catch(() => {});
+        btn.innerText = 'Pause Music';
+        btn.style.background = '#e11d48';
+        isMusicPlaying = true;
+      }
+    }
+
+    function adjustBrightness(val) { document.body.style.opacity = val / 100; }
+    function openSupportModal() { document.getElementById('supportModal').classList.remove('hidden-section'); }
+    function closeSupportModal() { document.getElementById('supportModal').classList.add('hidden-section'); }
+    
+    function toggleGPS() {
+      const isOn = document.getElementById('gpsToggle').checked;
+      triggerParentAlert(isOn ? 'Driver GPS transmitter active 📍' : 'Driver GPS paused');
+    }
+
+    function driverNotifyMeetingPoint() {
+      triggerParentAlert('Notification sent to parents: Driver is at the area meeting point! 📍');
+    }
+
+    function driverCheckInChild() {
+      document.getElementById('parentTripBadge').innerText = 'Child Checked In & On Bus ✅';
+      triggerParentAlert('Child successfully checked into transit! Parent notified ✅');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        const splash = document.getElementById('splashScreen');
+        if (splash) { splash.style.opacity = '0'; setTimeout(() => splash.remove(), 1000); }
+      }, 4000);
+    });
+  </script>
+</body>
+</html>
